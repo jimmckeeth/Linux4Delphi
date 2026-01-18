@@ -14,8 +14,6 @@ echo "This script requires sudo privileges"
 echo "More info: https://github.com/jimmckeeth/Linux4Delphi"
 echo ""
 
-LATEST=13
-
 # Stop on all errors
 set -e
 
@@ -228,7 +226,7 @@ echo ""
 # Set defaults
 INSTALL_DIR="/opt/PAServer/$PRODUCT"
 SCRIPT_PATH="/usr/local/bin/"
-SCRIPT_FILE="SCRIPT_PATH/pa$PRODUCT.sh"
+SCRIPT_FILE="$SCRIPT_PATH/pa$PRODUCT.sh"
 # Get the actual user who invoked sudo
 REAL_USER=${SUDO_USER:-$USER}
 REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
