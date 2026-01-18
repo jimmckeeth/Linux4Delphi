@@ -22,8 +22,10 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
+
+LATEST=13
 # Parse arguments
-PARAM="37.0" # Default version
+PARAM="$LATEST" # Default version
 PKG_OVERRIDE=""
 
 # Function to download files using whichever tool is available
