@@ -7,12 +7,15 @@
 #
 echo "_____________________________________________________________"
 echo ""
-echo "Setup Linux for Delphi development version 2025-12-19"
+echo "Setup Linux for Delphi development version 2026-01-17"
 echo "_____________________________________________________________"
 echo ""
 echo "This script requires sudo privileges"
 echo "More info: https://github.com/jimmckeeth/Linux4Delphi"
 echo ""
+
+LATEST=13
+
 # Stop on all errors
 set -e
 
@@ -52,23 +55,23 @@ while [[ $# -gt 0 ]]; do
       echo "  manager            = apt, pacman, dnf, or yum (force specific package manager)"
       echo ""
       echo "Where [version] is one of the following:"
-      echo "  37.0, 13.0         = Florence 13.0 [DEFAULT]"
-      echo "  23.0, 12.3, 12     = Athens 12.3"
+      echo "  13, 13.0, 37.0     = Florence 13.0 [DEFAULT]"
+      echo "  12, 12.3, 23.0     = Athens 12.3"
       echo "  12.2               = Athens 12.2"
       echo "  12.1               = Athens 12.1"
       echo "  12.0               = Athens 12.0"
-      echo "  22.0, 11.3, 11     = Alexandria 11.3"
+      echo "  11, 11.3, 22.0     = Alexandria 11.3"
       echo "  11.2               = Alexandria 11.2"
       echo "  11.1               = Alexandria 11.1"
       echo "  11.0               = Alexandria 11.0"
-      echo "  21.0, 10.4.1       = Sydney 10.4.1"
+      echo "  10.4.1, 21.0       = Sydney 10.4.1"
       echo "  10.4.0             = Sydney 10.4.0"
-      echo "  20.0, 10.3, 10.3.3 = Rio 10.3.3"
+      echo "  10.3, 10.3.3, 20.0 = Rio 10.3.3"
       echo "  10.3.2             = Rio 10.3.2"
       echo "  10.3.1             = Rio 10.3.1"
       echo "  10.3.0             = Rio 10.3.0"
-      echo "  19.0, 10.2, 10.2.3 = Tokyo 10.2.3"
-      echo "  10.2               = Tokyo 10.2.0"
+      echo "  10.2, 10.2.3, 19.0 = Tokyo 10.2.3"
+      echo "  10.2.0             = Tokyo 10.2.0"
       exit 0
       ;;
     *)
@@ -106,7 +109,7 @@ case "$PARAM" in
     "37.0"|"13.0"|"florence")
         COMPILER="37.0"
         RELEASE="Florence"
-        PRODUCT="13.0"
+        PRODUCT="13"
         PASERVER_URL="http://altd.embarcadero.com/releases/studio/37.0/130/LinuxPAServer37.0.tar.gz"
         ;;
     # Athens
@@ -224,13 +227,14 @@ echo "Using PAServer URL: $PASERVER_URL"
 echo ""
 # Set defaults
 INSTALL_DIR="/opt/PAServer/$PRODUCT"
-SCRIPT_PATH="/usr/local/bin/pa$PRODUCT.sh"
+SCRIPT_PATH="/usr/local/bin/"
+SCRIPT_FILE="SCRIPT_PATHpa$PRODUCT.sh"
 # Get the actual user who invoked sudo
 REAL_USER=${SUDO_USER:-$USER}
 REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
 SCRATCH_DIR="$REAL_HOME/.PAServer/$PRODUCT-scratch"
 echo "Installation directory: $INSTALL_DIR"
-echo "Launch script path: $SCRIPT_PATH"
+echo "Launch script: $SCRIPT_FILE"
 echo "" 
 
 # Detect distribution
@@ -328,7 +332,8 @@ if [[ "$PKG" == "apt" ]]; then
       apt purge openssh-server -y 
     fi
     # Removed libosmesa-dev from strict requirements
-    apt install joe wget p7zip-full curl build-essential zlib1g-dev libcurl4-gnutls-dev python3 libpython3-dev libgtk-3-dev $NCURSES_PKG xorg libgl1-mesa-dev libgtk-3-bin libc6-dev -y --no-install-recommends
+    # Removed joe, it is a text editor and I doubt it is required.... Need more testing.
+    apt install wget p7zip-full curl build-essential zlib1g-dev libcurl4-gnutls-dev python3 libpython3-dev libgtk-3-dev $NCURSES_PKG xorg libgl1-mesa-dev libgtk-3-bin libc6-dev -y --no-install-recommends
     # Optional installation of OSMesa (handles missing package errors gracefully)
     echo "Attempting to install optional libosmesa-dev..."
     if apt install libosmesa-dev -y --no-install-recommends 2>/dev/null; then
@@ -429,14 +434,14 @@ if [ ! -f "$INSTALL_DIR/paserver" ]; then
     exit 1
 fi
 
-cat <<EOF >"$SCRIPT_PATH"
+cat <<EOF >"$SCRIPT_FILE"
 #!/bin/bash
 . /etc/os-release
 echo "Detected Linux distribution: \$NAME \$VERSION_ID (\$ID)"
 echo "________________________________________"
 echo "" 
 echo "Install dir: $INSTALL_DIR " 
-echo "Script path: $SCRIPT_PATH " 
+echo "Script path: $SCRIPT_FILE " 
 echo "Scratch dir: $SCRATCH_DIR " 
 echo "Password is BLANK (none) so you might want to change that..." 
 echo "________________________________________"
@@ -444,10 +449,10 @@ echo ""
 # https://docwiki.embarcadero.com/RADStudio/en/Setting_Options_for_the_Platform_Assistant
 $INSTALL_DIR/paserver -scratchdir=$SCRATCH_DIR -password= -port=64211
 EOF
-chmod +x "$SCRIPT_PATH"
+chmod +x "$SCRIPT_FILE"
 
 # Verify the script
-if [ ! -f "$SCRIPT_PATH" ]; then
+if [ ! -f "$SCRIPT_FILE" ]; then
     echo "Launch script creation failed. Aborting."
     exit 1
 fi 
@@ -469,11 +474,15 @@ echo ""
 echo "Setup complete!"
 echo ""
 echo "Install dir: $INSTALL_DIR"
-echo "Script path: $SCRIPT_PATH"
+echo "Script path: $SCRIPT_FILE"
 echo "Scratch dir: $SCRATCH_DIR"
 echo "Password is BLANK (none)"
 echo "Edit the script to change settings."
 echo "____________________________________________"
 echo ""
 echo " To launch PAServer type: pa$PRODUCT.sh"
+if [[ $PRODUCT -eq $LATEST]]; then
+    echo "   Since $PRODUCT is the latest, you can also use pa.sh"
+    ln $SCRIPT_FILE $SCRIPT_PATHpa.sh
+fi
 echo "____________________________________________"
