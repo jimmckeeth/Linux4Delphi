@@ -228,13 +228,13 @@ echo ""
 # Set defaults
 INSTALL_DIR="/opt/PAServer/$PRODUCT"
 SCRIPT_PATH="/usr/local/bin/"
-SCRIPT_FILE="SCRIPT_PATHpa$PRODUCT.sh"
+SCRIPT_FILE="SCRIPT_PATH/pa$PRODUCT.sh"
 # Get the actual user who invoked sudo
 REAL_USER=${SUDO_USER:-$USER}
 REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
 SCRATCH_DIR="$REAL_HOME/.PAServer/$PRODUCT-scratch"
 echo "Installation directory: $INSTALL_DIR"
-echo "Launch script: $SCRIPT_FILE"
+echo "Launch script file: $SCRIPT_FILE"
 echo "" 
 
 # Detect distribution
@@ -481,8 +481,8 @@ echo "Edit the script to change settings."
 echo "____________________________________________"
 echo ""
 echo " To launch PAServer type: pa$PRODUCT.sh"
-if [[ $PRODUCT -eq $LATEST]]; then
+if [[ $PRODUCT -eq $LATEST ]]; then
+    ln "$SCRIPT_FILE" "$SCRIPT_PATH/pa.sh"
     echo "   Since $PRODUCT is the latest, you can also use pa.sh"
-    ln $SCRIPT_FILE $SCRIPT_PATHpa.sh
 fi
 echo "____________________________________________"
