@@ -106,7 +106,7 @@ case "$PARAM" in
         exit 0
         ;;
     # Florence
-    "37.0"|"13.0"|"florence")
+    "13"|"37.0"|"13.0"|"florence")
         COMPILER="37.0"
         RELEASE="Florence"
         PRODUCT="13"
