@@ -52,7 +52,8 @@ while [[ $# -gt 0 ]]; do
       echo "  manager            = apt, pacman, dnf, or yum (force specific package manager)"
       echo ""
       echo "Where [version] is one of the following:"
-      echo "  37.0, 13.0         = Florence 13.0 [DEFAULT]"
+      echo "  37.0, 13.1         = Florence 13.1 [DEFAULT]"
+      echo "  13.0               = Florence 13.0"
       echo "  23.0, 12.3, 12     = Athens 12.3"
       echo "  12.2               = Athens 12.2"
       echo "  12.1               = Athens 12.1"
@@ -83,7 +84,8 @@ case "$PARAM" in
         echo "Usage: sudo SetupUbuntu4Delphi.sh [version]"
         echo ""
         echo "Where [version] is one of the following:"
-        echo "  37.0, 13.0         = Florence 13.0 [DEFAULT]"
+        echo "  37.0, 13.1         = Florence 13.1 [DEFAULT]"
+        echo "  13.0               = Florence 13.0"
         echo "  23.0, 12.3, 12     = Athens 12.3"
         echo "  12.2               = Athens 12.2"
         echo "  12.1               = Athens 12.1"
@@ -103,10 +105,16 @@ case "$PARAM" in
         exit 0
         ;;
     # Florence
-    "37.0"|"13.0"|"florence")
+    "37.0"|"13.1"|"florence")
         COMPILER="37.0"
+        PRODUCT="13.1"
         RELEASE="Florence"
+        PASERVER_URL="http://altd.embarcadero.com/releases/studio/37.0/131/LinuxPAServer37.0.tar.gz"
+        ;;
+    "13.0")
+        COMPILER="37.0"
         PRODUCT="13.0"
+        RELEASE="Florence"
         PASERVER_URL="http://altd.embarcadero.com/releases/studio/37.0/130/LinuxPAServer37.0.tar.gz"
         ;;
     # Athens
