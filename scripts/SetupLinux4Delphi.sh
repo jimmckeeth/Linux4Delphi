@@ -80,49 +80,25 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "$PARAM" in
-    "help"|"--help"|"h"|"--h"|"-h")
-        echo "Usage: sudo SetupUbuntu4Delphi.sh [version]"
-        echo ""
-        echo "Where [version] is one of the following:"
-        echo "  37.0, 13.1         = Florence 13.1 [DEFAULT]"
-        echo "  13.0               = Florence 13.0"
-        echo "  23.0, 12.3, 12     = Athens 12.3"
-        echo "  12.2               = Athens 12.2"
-        echo "  12.1               = Athens 12.1"
-        echo "  12.0               = Athens 12.0"
-        echo "  22.0, 11.3, 11     = Alexandria 11.3"
-        echo "  11.2               = Alexandria 11.2"
-        echo "  11.1               = Alexandria 11.1"
-        echo "  11.0               = Alexandria 11.0"
-        echo "  21.0, 10.4.1       = Sydney 10.4.1"
-        echo "  10.4.0             = Sydney 10.4.0"
-        echo "  20.0, 10.3, 10.3.3 = Rio 10.3.3"
-        echo "  10.3.2             = Rio 10.3.2"
-        echo "  10.3.1             = Rio 10.3.1"
-        echo "  10.3.0             = Rio 10.3.0"
-        echo "  19.0, 10.2, 10.2.3 = Tokyo 10.2.3"
-        echo "  10.2               = Tokyo 10.2.0"
-        exit 0
-        ;;
     # Florence
     "37.0"|"13.1"|"florence")
         COMPILER="37.0"
         PRODUCT="13.1"
         RELEASE="Florence"
-        PASERVER_URL="http://altd.embarcadero.com/releases/studio/37.0/131/LinuxPAServer37.0.tar.gz"
+        PASERVER_URL="https://altd.embarcadero.com/releases/studio/37.0/131/LinuxPAServer37.0.tar.gz"
         ;;
     "13.0")
         COMPILER="37.0"
         PRODUCT="13.0"
         RELEASE="Florence"
-        PASERVER_URL="http://altd.embarcadero.com/releases/studio/37.0/130/LinuxPAServer37.0.tar.gz"
+        PASERVER_URL="https://altd.embarcadero.com/releases/studio/37.0/130/LinuxPAServer37.0.tar.gz"
         ;;
     # Athens
     "23.0"|"12.3"|"12"|"athens")
         COMPILER="23.0"
         RELEASE="Athens"
         PRODUCT="12.3"
-        PASERVER_URL="http://altd.embarcadero.com/releases/studio/23.0/123/LinuxPAServer23.0.tar.gz"
+        PASERVER_URL="https://altd.embarcadero.com/releases/studio/23.0/123/LinuxPAServer23.0.tar.gz"
         ;;
     "12.2")
         COMPILER="23.0"
@@ -140,14 +116,14 @@ case "$PARAM" in
         COMPILER="23.0"
         PRODUCT="12.0"
         RELEASE="Athens"
-        PASERVER_URL="http://altd.embarcadero.com/releases/studio/23.0/120/LinuxPAServer23.0.tar.gz"
+        PASERVER_URL="https://altd.embarcadero.com/releases/studio/23.0/120/LinuxPAServer23.0.tar.gz"
         ;;
     # Alexandria
     "22.0"|"11"|"11.3"|"alexandria")
         COMPILER="22.0"
         PRODUCT="11.3"
         RELEASE="Alexandria"
-        PASERVER_URL="http://altd.embarcadero.com/releases/studio/22.0/113/LinuxPAServer22.0.tar.gz"
+        PASERVER_URL="https://altd.embarcadero.com/releases/studio/22.0/113/LinuxPAServer22.0.tar.gz"
     ;;
     "11.0")
         COMPILER="22.0"
@@ -178,45 +154,45 @@ case "$PARAM" in
         COMPILER="21.0"
         PRODUCT="10.4.0"
         RELEASE="Sydney"
-        PASERVER_URL="http://altd.embarcadero.com/releases/studio/21.0/PAServer/LinuxPAServer21.0.tar.gz"
+        PASERVER_URL="https://altd.embarcadero.com/releases/studio/21.0/PAServer/LinuxPAServer21.0.tar.gz"
     ;;
     # Rio
     "10.3"|"rio"|"10.3.3")
         COMPILER="20.0"
         PRODUCT="10.3.3"
         RELEASE="Rio"
-        PASERVER_URL="http://altd.embarcadero.com/releases/studio/20.0/PAServer/Release3/LinuxPAServer20.0.tar.gz"
+        PASERVER_URL="https://altd.embarcadero.com/releases/studio/20.0/PAServer/Release3/LinuxPAServer20.0.tar.gz"
     ;;
     "10.3.2")
         COMPILER="20.0"
         PRODUCT="10.3.2"
         RELEASE="Rio"
-        PASERVER_URL="http://altd.embarcadero.com/releases/studio/20.0/PAServer/Release2/LinuxPAServer20.0.tar.gz"
+        PASERVER_URL="https://altd.embarcadero.com/releases/studio/20.0/PAServer/Release2/LinuxPAServer20.0.tar.gz"
     ;;
     "10.3.1")
         COMPILER="20.0"
         PRODUCT="10.3.1"
         RELEASE="Rio"
-        PASERVER_URL="http://altd.embarcadero.com/releases/studio/20.0/PAServer/Release1/LinuxPAServer20.0.tar.gz"
+        PASERVER_URL="https://altd.embarcadero.com/releases/studio/20.0/PAServer/Release1/LinuxPAServer20.0.tar.gz"
     ;;
     "10.3.0")
         COMPILER="20.0"
         PRODUCT="10.3.0"
         RELEASE="Rio"
-        PASERVER_URL="http://altd.embarcadero.com/releases/studio/20.0/PAServer/LinuxPAServer20.0.tar.gz"
+        PASERVER_URL="https://altd.embarcadero.com/releases/studio/20.0/PAServer/LinuxPAServer20.0.tar.gz"
     ;;
     # Tokyo
     "10.2")
         COMPILER="19.0"
         PRODUCT="10.2.0"
         RELEASE="Tokyo"
-        PASERVER_URL="http://altd.embarcadero.com/releases/studio/19.0/PAServer/LinuxPAServer19.0.tar.gz"
+        PASERVER_URL="https://altd.embarcadero.com/releases/studio/19.0/PAServer/LinuxPAServer19.0.tar.gz"
     ;;
     "tokyo"|"10.2.3")
         COMPILER="19.0"
         PRODUCT="10.2.3"
         RELEASE="Tokyo"
-        PASERVER_URL="http://altd.embarcadero.com/releases/studio/19.0/PAServer/Release3/LinuxPAServer19.0.tar.gz"
+        PASERVER_URL="https://altd.embarcadero.com/releases/studio/19.0/PAServer/Release3/LinuxPAServer19.0.tar.gz"
     ;;
 esac
 
@@ -336,7 +312,10 @@ if [[ "$PKG" == "apt" ]]; then
       apt purge openssh-server -y 
     fi
     # Removed libosmesa-dev from strict requirements
-    apt install joe wget p7zip-full curl build-essential zlib1g-dev libcurl4-gnutls-dev python3 libpython3-dev libgtk-3-dev $NCURSES_PKG xorg libgl1-mesa-dev libgtk-3-bin libc6-dev -y --no-install-recommends
+    if ! apt install joe wget p7zip-full curl build-essential zlib1g-dev libcurl4-gnutls-dev python3 libpython3-dev libgtk-3-dev $NCURSES_PKG xorg libgl1-mesa-dev libgtk-3-bin libc6-dev -y --no-install-recommends; then
+        echo "Required package installation failed. Aborting."
+        exit 1
+    fi
     # Optional installation of OSMesa (handles missing package errors gracefully)
     echo "Attempting to install optional libosmesa-dev..."
     if apt install libosmesa-dev -y --no-install-recommends 2>/dev/null; then
@@ -355,6 +334,7 @@ elif [[ "$PKG" == "pacman" ]]; then
     if command -v steamos-readonly &> /dev/null; then
         echo "Temporarily disabling SteamOS read-only filesystem..."
         steamos-readonly disable
+        trap 'if [ -f /etc/pacman.conf.bak ]; then mv /etc/pacman.conf.bak /etc/pacman.conf; fi; steamos-readonly enable' EXIT
     fi
 
     echo "Initializing pacman keyring and updating packages..."
@@ -396,6 +376,7 @@ else
 fi
 
 echo "Setting up directories for PAServer"
+# Clear contents but keep the directory; mkdir -p always follows to recreate it if rm somehow removed it
 rm -rf "${INSTALL_DIR:?}"/*
 if ! mkdir -p "$INSTALL_DIR"; then
     echo "Failed to create installation directory. Aborting."
@@ -459,14 +440,6 @@ if [ ! -f "$SCRIPT_PATH" ]; then
     echo "Launch script creation failed. Aborting."
     exit 1
 fi 
-
-if [[ "$ID" == "steamos" ]]; then
-    # Re-enable SteamOS read-only filesystem
-    if command -v steamos-readonly &> /dev/null; then
-        echo "Re-enabling SteamOS read-only filesystem..."
-        steamos-readonly enable
-    fi
-fi
 
 if [[ -n "$osmesa" ]]; then
     echo "$osmesa"
