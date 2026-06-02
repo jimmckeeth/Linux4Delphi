@@ -1,12 +1,12 @@
 # Linux4Delphi Setup
 
 [![ShellCheck](https://img.shields.io/github/actions/workflow/status/jimmckeeth/linux4delphi/commit_test.yml?job=ShellCheck&label=ShellCheck&logo=shell)](https://github.com/jimmckeeth/linux4delphi/actions/workflows/commit_test.yml)
-[![Ubuntu 24.04 with Delphi 13](https://img.shields.io/github/actions/workflow/status/jimmckeeth/linux4delphi/commit_test.yml?job=ubuntu_test&label=Ubuntu%2024.04%20with%20Delphi%2013&logo=ubuntu)](https://github.com/jimmckeeth/linux4delphi/actions/workflows/commit_test.yml)
+[![Ubuntu 26.04 with Delphi 13](https://img.shields.io/github/actions/workflow/status/jimmckeeth/linux4delphi/commit_test.yml?job=ubuntu_test&label=Ubuntu%2026.04%20with%20Delphi%2013&logo=ubuntu)](https://github.com/jimmckeeth/linux4delphi/actions/workflows/commit_test.yml)
 [![RHEL 10 with Delphi 13](https://img.shields.io/github/actions/workflow/status/jimmckeeth/linux4delphi/commit_test.yml?job=rhel_test&label=RHEL%2010%20with%20Delphi%2013&logo=redhat&logoColor=red)](https://github.com/jimmckeeth/linux4delphi/actions/workflows/commit_test.yml)
 
 **Update**: This project was formerly known as *Delphi-on-Linux-Setup*, but it has been renamed to *Linux4Delphi* to better reflect the scope of the project. Update your bookmarks and references accordingly.
 
-Scripts and resources to simplify the setup and development with Delphi on Linux. It should work with all x86 64-bit Linux distros that Delphi suports in WSL, Virtual Machines, or running on hardware native.
+Scripts and resources to simplify the setup and development with Delphi on Linux. It should work with all x86 64-bit Linux distros that Delphi supports in WSL, Virtual Machines, or running on hardware native.
 
 Supporting Delphi 10.2 *Tokyo* (19.0) through Delphi 13 *Florence* (37.0), from one script. The installation location changed now, so it isn't user specific.
 
@@ -28,7 +28,7 @@ If you don't have curl you can use wget instead (Debian usually excludes curl by
 wget -qO - https://tinyurl.com/SetupLinux4Delphi | sudo bash 
 ```
 
-⚠️*Warning*: Is is recommended to [locally review the script](scripts/SetupLinux4Delphi.sh) before running it in a *production* envorment.
+⚠️*Warning*: It is recommended to [locally review the script](scripts/SetupLinux4Delphi.sh) before running it in a *production* environment.
 
 ✅*Update*: To improve performance, especially if testing in a containerized environment, calls to `apt`, `yum`, & `dnf` use  `--no-install-recommends` or `--setopt=install_weak_deps=False` respectively, which prevents the installation of *recommended packages*, that are not essential for the core functionality. It also makes the script less likely to change unrelated packages you might need.
 
@@ -40,7 +40,8 @@ Usage: `sudo SetupLinux4Delphi.sh [version] [pkgmgr]`
 
 Where [version] is one of the following:
 
-* Florence 13.0    = `Florence`, `37.0`, `13.0` or *blank*
+* Florence 13.1    = `Florence`, `37.0`, `13.1` or *blank*
+* Florence 13.0    = `13.0`
 * Athens 12.3      = `Athens`, `23.0`, `12.3`, or `12`
 * Athens 12.2      = `12.2`
 * Athens 12.1      = `12.1`
@@ -78,10 +79,11 @@ I tested Delphi 13 Florence against the following distros with this script:
   * Ubuntu 20.04
   * Ubuntu 22.04
   * Ubuntu 24.04
+  * Ubuntu 26.04
   * Kali Linux Rolling 2.6.3.0
   * Debian 13 (trixie)
   * Pengwin (WSL)
-* Fedora bassed
+* Fedora based
   * Fedora Linux 42
   * Fedora Remix for WSL
   * Rocky Linux 9.6 (Blue Onyx)
@@ -102,17 +104,17 @@ The old version of the script installed it based on the compiler version number,
 
 It defaults to a **blank password**. You should *probably* change that.
 
-The instalation locations are as follows:
+The installation locations are as follows:
 
 * `INSTALL_DIR="/opt/PAServer/$PRODUCT"`
 * `SCRIPT_PATH="/usr/local/bin/pa$PRODUCT.sh"`
-* `SCRATCH_DIR="/var/tmp/paserver-$PRODUCT"`
+* `SCRATCH_DIR="$REAL_HOME/.PAServer/$PRODUCT-scratch"`
 
-Where `$PRODUCT` is 13.0, 12.2, etc. So you launch the *Florence* PAServer with `pa13.0.sh`.
+Where `$PRODUCT` is 13.1, 13.0, 12.2, etc. So you launch the latest *Florence* PAServer with `pa13.1.sh`.
 
 ## More information
 
-The installation of packages is based on the [DocWiki](https://docwiki.embarcadero.com/RADStudio/en/Linux_Application_Development), but with a few changes to address neuances of different distros & installs. If the script doesn't work on your distro of choice then see if the original DocWiki instructions do, and if that still doesn't work, then you distro or installation might not be supported.
+The installation of packages is based on the [DocWiki](https://docwiki.embarcadero.com/RADStudio/en/Linux_Application_Development), but with a few changes to address nuances of different distros & installs. If the script doesn't work on your distro of choice then see if the original DocWiki instructions do, and if that still doesn't work, then your distro or installation might not be supported.
 
 DocWiki Links:
 
@@ -148,4 +150,5 @@ Start Ubuntu from the start menu, or from the terminal by typing `ubuntu`
 ### Then run the following script
 
 ```bash
-curl -fsSL https://tinyurl.com/SetupLinux4Delphi | sudo bash```
+curl -fsSL https://tinyurl.com/SetupLinux4Delphi | sudo bash
+```

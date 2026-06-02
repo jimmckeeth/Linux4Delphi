@@ -19,19 +19,24 @@ jobs:
           severity: error
 
   ubuntu_test:
-    name: Ubuntu 24.04
-    runs-on: ubuntu-24.04
+    name: Ubuntu 26.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Run Setup
+      - name: Run Setup and Verify PAServer in Ubuntu 26.04
         run: |
-          chmod +x ./scripts/SetupLinux4Delphi.sh
-          sudo ./scripts/SetupLinux4Delphi.sh 13.0
-      - name: Verify PAServer
-        run: |
-          /usr/local/bin/pa13.0.sh &
-          sleep 10
-          pgrep paserver
+          docker run --rm --privileged \
+            -e DEBIAN_FRONTEND=noninteractive \
+            -v "$PWD:/workspace" \
+            ubuntu:26.04 \
+            bash -c "
+              set -e
+              chmod +x /workspace/scripts/SetupLinux4Delphi.sh
+              /workspace/scripts/SetupLinux4Delphi.sh 13.1
+              /usr/local/bin/pa13.1.sh &
+              sleep 15
+              pgrep paserver
+            "
 
   rhel_test:
     name: RHEL 10
@@ -43,9 +48,9 @@ jobs:
       - name: Run Setup
         run: |
           chmod +x ./scripts/SetupLinux4Delphi.sh
-          ./scripts/SetupLinux4Delphi.sh 13.0
+          ./scripts/SetupLinux4Delphi.sh 13.1
       - name: Verify PAServer
         run: |
-          /usr/local/bin/pa13.0.sh &
+          /usr/local/bin/pa13.1.sh &
           sleep 15
           pgrep paserver
