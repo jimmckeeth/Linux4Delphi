@@ -32,7 +32,8 @@ case "$PARAM" in
         echo "  11.2               = Alexandria 11.2"
         echo "  11.1               = Alexandria 11.1"
         echo "  11.0               = Alexandria 11.0"
-        echo "  21.0, 10.4.1       = Sydney 10.4.1"
+        echo "  21.0, 10.4, 10.4.2 = Sydney 10.4.2"
+        echo "  10.4.1             = Sydney 10.4.1"
         echo "  10.4.0             = Sydney 10.4.0"
         echo "  20.0, 10.3, 10.3.3 = Rio 10.3.3"
         echo "  10.3.2             = Rio 10.3.2"
@@ -79,7 +80,7 @@ case "$PARAM" in
         COMPILER="22.0"
         PRODUCT="11.3"
         RELEASE="Alexandria"
-        PASERVER_URL="http://altd.embarcadero.com/releases/studio/22.0/113/LinuxPAServer22.0.tar.gz"
+        PASERVER_URL="https://altd.embarcadero.com/releases/studio/22.0/1131/LinuxPAServer22.0.tar.gz"
     ;;
     "11.0")
         COMPILER="22.0"
@@ -100,7 +101,13 @@ case "$PARAM" in
         PASERVER_URL="https://altd.embarcadero.com/releases/studio/22.0/112/LinuxPAServer22.0.tar.gz"
     ;;  
     # Sydney
-    "10.4"|"10.4.1"|"sydney"|"21.0")
+    "10.4"|"10.4.2"|"sydney"|"21.0")
+        COMPILER="21.0"
+        PRODUCT="10.4.2"
+        RELEASE="Sydney"
+        PASERVER_URL="https://altd.embarcadero.com/releases/studio/21.0/2/PAServer/LinuxPAServer21.0.tar.gz"
+    ;;
+    "10.4.1")
         COMPILER="21.0"
         PRODUCT="10.4.1"
         RELEASE="Sydney"
