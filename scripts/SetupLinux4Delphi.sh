@@ -159,9 +159,112 @@ case "$PARAM" in
     ;;
 esac
 
+# Attempt to locate a PAServer URL for versions not explicitly listed.
+# Probes candidate URLs derived from observed Embarcadero URL patterns.
+try_guess_paserver_url() {
+    local input="$1"
+    local base="https://altd.embarcadero.com/releases/studio"
+    local major minor patch has_patch compiler release product digits
+
+    if [[ "$input" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+        major="${BASH_REMATCH[1]}"; minor="${BASH_REMATCH[2]}"; patch="${BASH_REMATCH[3]}"; has_patch=1
+    elif [[ "$input" =~ ^([0-9]+)\.([0-9]+)$ ]]; then
+        major="${BASH_REMATCH[1]}"; minor="${BASH_REMATCH[2]}"; patch="0"; has_patch=0
+    else
+        return 1
+    fi
+
+    # Map product major version to internal compiler version and release name.
+    # Compiler numbers jumped from 23.0 (Athens/12.x) to 37.0 (Florence/13.x);
+    # future releases cannot be reliably predicted beyond 13.x.
+    case "$major" in
+        10)
+            case "$minor" in
+                2) compiler="19.0"; release="Tokyo" ;;
+                3) compiler="20.0"; release="Rio" ;;
+                4) compiler="21.0"; release="Sydney" ;;
+                *) return 1 ;;
+            esac
+            product="${major}.${minor}.${patch}"
+            digits="${major}${minor}${patch}"
+            ;;
+        11) compiler="22.0"; release="Alexandria"; product="${major}.${minor}"; digits="${major}${minor}" ;;
+        12) compiler="23.0"; release="Athens";     product="${major}.${minor}"; digits="${major}${minor}" ;;
+        13) compiler="37.0"; release="Florence";   product="${major}.${minor}"; digits="${major}${minor}" ;;
+        *) return 1 ;;
+    esac
+
+    # Build ordered candidate list based on the URL pattern for each era.
+    local candidates=()
+    case "$compiler" in
+        "19.0"|"20.0")
+            # Tokyo/Rio: updates use PAServer/Release{N}/
+            if [ "$patch" -eq 0 ]; then
+                candidates+=("$base/$compiler/PAServer/LinuxPAServer${compiler}.tar.gz")
+            else
+                candidates+=(
+                    "$base/$compiler/PAServer/Release${patch}/LinuxPAServer${compiler}.tar.gz"
+                    "$base/$compiler/PAServer/LinuxPAServer${compiler}.tar.gz"
+                )
+            fi
+            ;;
+        "21.0")
+            # Sydney: updates use {N}/PAServer/
+            if [ "$patch" -eq 0 ]; then
+                candidates+=("$base/$compiler/PAServer/LinuxPAServer${compiler}.tar.gz")
+            else
+                candidates+=(
+                    "$base/$compiler/${patch}/PAServer/LinuxPAServer${compiler}.tar.gz"
+                    "$base/$compiler/PAServer/LinuxPAServer${compiler}.tar.gz"
+                )
+            fi
+            ;;
+        "22.0")
+            # Alexandria: base release has no subdir; updates use {digits}[1]/
+            if [ "$minor" -eq 0 ]; then
+                candidates+=("$base/$compiler/LinuxPAServer${compiler}.tar.gz")
+            else
+                candidates+=(
+                    "$base/$compiler/${digits}1/LinuxPAServer${compiler}.tar.gz"
+                    "$base/$compiler/${digits}/LinuxPAServer${compiler}.tar.gz"
+                )
+            fi
+            ;;
+        *)
+            # Athens/Florence and future: flat {digits}/ or nested {digits}/{digits}1/
+            candidates+=(
+                "$base/$compiler/${digits}/LinuxPAServer${compiler}.tar.gz"
+                "$base/$compiler/${digits}/${digits}1/LinuxPAServer${compiler}.tar.gz"
+            )
+            ;;
+    esac
+
+    echo "Version '$input' is not explicitly listed. Probing for PAServer..."
+    local url status
+    for url in "${candidates[@]}"; do
+        printf "  Trying: %s\n" "$url"
+        status=$(curl -sI --max-time 10 "$url" 2>/dev/null | awk 'NR==1{print $2}')
+        if [ "$status" = "200" ]; then
+            PASERVER_URL="$url"
+            COMPILER="$compiler"
+            RELEASE="$release"
+            PRODUCT="$product"
+            echo "  Found!"
+            echo "WARNING: Using a guessed URL — verify this PAServer matches your IDE version."
+            return 0
+        fi
+    done
+
+    echo "Could not locate a PAServer for '$input'. Check https://altd.embarcadero.com/releases/studio/ manually."
+    return 1
+}
+
 if [ -z "$PASERVER_URL" ]; then
-    echo "Unknown version: $PARAM"
-    exit 1
+    if ! try_guess_paserver_url "$PARAM"; then
+        echo "Unknown version: $PARAM"
+        echo "Run with 'help' to see supported versions."
+        exit 1
+    fi
 fi
 
 ARCHIVE="${PASERVER_URL##*/}"
