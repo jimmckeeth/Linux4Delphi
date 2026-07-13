@@ -18,6 +18,46 @@ jobs:
           scandir: './scripts'
           severity: error
 
+  pacommander_smoke_test:
+    name: pacommander smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Syntax check
+        run: python3 -m py_compile scripts/pacommander.py
+      - name: Smoke test proxy + logging
+        run: |
+          set -e
+          python3 -c "
+          import asyncio
+          async def echo(r, w):
+              data = await r.read(4096)
+              w.write(b'echo:' + data)
+              await w.drain()
+              w.close()
+          async def main():
+              srv = await asyncio.start_server(echo, '127.0.0.1', 64211)
+              async with srv:
+                  await srv.serve_forever()
+          asyncio.run(main())
+          " &
+          sleep 1
+          python3 scripts/pacommander.py --listen-host 127.0.0.1 --log-file /tmp/pacommander.log &
+          PROXY_PID=$!
+          sleep 1
+          python3 -c "
+          import socket
+          s = socket.create_connection(('127.0.0.1', 64212), timeout=5)
+          s.sendall(b'hello-pacommander')
+          resp = s.recv(4096)
+          assert resp == b'echo:hello-pacommander', resp
+          print('relay OK:', resp)
+          "
+          kill $PROXY_PID
+          grep -q "hello-pacommander" /tmp/pacommander.log
+          grep -q "echo:hello-pacommander" /tmp/pacommander.log
+          echo "log OK"
+
   ubuntu_test:
     name: Ubuntu 26.04
     runs-on: ubuntu-latest

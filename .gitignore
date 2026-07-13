@@ -68,3 +68,7 @@ __recovery/
 # Boss dependency manager vendor folder https://github.com/HashLoad/boss
 modules/
 *.af~lock~
+
+# Python bytecode cache (pacommander)
+__pycache__/
+*.pyc

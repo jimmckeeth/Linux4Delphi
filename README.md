@@ -112,6 +112,19 @@ The installation locations are as follows:
 
 Where `$PRODUCT` is 13.1, 13.0, 12.2, etc. So you launch the latest *Florence* PAServer with `pa13.1.sh`.
 
+## pacommander (experimental)
+
+`scripts/pacommander.py` is an early, standalone building block for a future
+smart PAServer router. Today it only does one thing: it listens on port
+64212, transparently forwards all traffic to a PAServer listening on
+127.0.0.1:64211, and logs everything passing through in both directions
+(human-readable hex dumps) so the PAServer wire protocol can be studied.
+
+    python3 scripts/pacommander.py
+
+No install step, no sudo required. See `--help` for host/port/log-file
+options. This is not yet wired into `SetupLinux4Delphi.sh`.
+
 ## More information
 
 The installation of packages is based on the [DocWiki](https://docwiki.embarcadero.com/RADStudio/en/Linux_Application_Development), but with a few changes to address nuances of different distros & installs. If the script doesn't work on your distro of choice then see if the original DocWiki instructions do, and if that still doesn't work, then your distro or installation might not be supported.
