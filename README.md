@@ -50,7 +50,8 @@ Where [version] is one of the following:
 * Alexandria 11.2  = `11.2`
 * Alexandria 11.1  = `11.1`
 * Alexandria 11.0  = `11.0`
-* Sydney 10.4.1    = `Sydney`, `21.0`, or `10.4.1`
+* Sydney 10.4.2    = `Sydney`, `21.0`, or `10.4.2`
+* Sydney 10.4.1    = `10.4.1`
 * Sydney 10.4.0    = `10.4.0`
 * Rio 10.3.3       = `Rio`, `20.0`, `10.3`, or `10.3.3`
 * Rio 10.3.2       = `10.3.2`

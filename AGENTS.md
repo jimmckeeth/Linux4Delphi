@@ -1,52 +1,110 @@
-# Repository Guidelines
+﻿# Repository Guidelines
 
-## Project Structure & Module Organization
+## Domain and Current Product Direction
 
-This repository centers on one maintained Bash installer: `scripts/SetupLinux4Delphi.sh`. It installs PAServer and Linux dependencies for Delphi development across supported distributions. The `legacy/` directory contains superseded historical scripts and should be used only for reference. Images and README assets live in `images/`. GitHub Actions configuration is in `.github/workflows/commit_test.yml`. Local helper files such as `test-local.ps1` may exist, but production changes should stay focused on the maintained script and documentation.
+Linux4Delphi provides Linux-side setup for Delphi PAServer across multiple Delphi releases. Historically, the repository centered on one Bash installer (`scripts/SetupLinux4Delphi.sh`) that installs prerequisites and one selected PAServer version.
 
-## Build, Test, and Development Commands
+Current direction: transition to a router model where `pacommander` owns PAServer version mapping, download/install, launch on a free port, and proxying; keep existing direct script behavior supported during transition.
 
-- `shellcheck scripts/SetupLinux4Delphi.sh` checks the main script; CI treats ShellCheck findings at error severity.
-- `bash -n scripts/SetupLinux4Delphi.sh` performs a fast Bash syntax check.
-- `shfmt -d scripts/SetupLinux4Delphi.sh` previews formatting differences without rewriting the file.
-- `powershell -ExecutionPolicy Bypass -File .\test-local.ps1` runs local validation when available.
+## Architecture Intent and Ownership Boundaries
 
-GitHub Actions also runs live install tests for Ubuntu 26.04 and RHEL 10. Push to a `test**` branch to exercise CI before sending changes to `main`.
+Treat responsibilities as two layers:
 
-## Coding Style & Naming Conventions
+1. **Bootstrap layer (shell script)**
+   - `scripts/SetupLinux4Delphi.sh` should converge on prerequisite installation plus pacommander install/startup.
+   - During migration, direct PAServer install/launch behavior remains supported.
 
-Keep the main script POSIX-aware where practical, but preserve existing Bash conventions. Use uppercase variable names for installer state such as `COMPILER`, `PRODUCT`, `RELEASE`, and `PASERVER_URL`. Keep version alias handling in the `case "$PARAM"` block and maintain clear package-manager branches for `apt`, `dnf`, `yum`, and `pacman`. Prefer small, readable conditionals over dense one-liners because this script is intended to be reviewed before running with `sudo`.
+2. **Runtime router layer (pacommander)**
+   - `pacommander` should own version selection, artifact retrieval, installation, per-version process management, and connection proxying for incoming Delphi sessions.
 
-## Testing Guidelines
+Avoid split ownership of version mapping logic long-term. Target owner is pacommander; script should become thin bootstrap.
 
-Run ShellCheck and `bash -n` before committing script changes. When adding Delphi releases or package-manager behavior, update help text and CI version references in the same change. For risky install logic, test in WSL, a VM, or a container rather than on a production host.
+## Key Invariants and Deliberate Non-Invariants
 
-## Commit & Pull Request Guidelines
+### Invariants to preserve unless explicitly changed
+- Keep backward-compatible script entry UX (`sudo SetupLinux4Delphi.sh [version] [pkgmgr]`) while dual mode exists.
+- Keep distro/package-manager branches (`apt`, `dnf`, `yum`, `pacman`) explicit and auditable in `scripts/SetupLinux4Delphi.sh`.
+- Keep PAServer URL updates tied to Embarcadero DocWiki verification, not inferred from nearby entries.
 
-Recent commits use short, direct, mostly lowercase subjects, for example `add 13.1 support for issue #5`. Keep commits scoped to one behavior or documentation update. Pull requests should describe the affected distro or Delphi version, list local checks run, link related issues, and include relevant CI results. Add screenshots only for README or asset changes.
+### Not fixed by policy (may be redesigned)
+- Current install/state layout used by script (`/opt/PAServer/$PRODUCT`, `/usr/local/bin/pa$PRODUCT.sh`, `~/.PAServer/$PRODUCT-scratch`) may change if router architecture needs a different storage/process model.
 
-## Agent-Specific Instructions
+## Entry Points and Startup Flow
 
-Do not modify `legacy/` unless the task explicitly targets historical scripts. Avoid reverting local user changes. When changing supported versions, verify the PAServer URL from the Embarcadero DocWiki rather than inferring it from nearby entries.
+- `scripts/SetupLinux4Delphi.sh`
+  - Parses version and optional package-manager override.
+  - Maps aliases to `COMPILER`, `PRODUCT`, `RELEASE`, `PASERVER_URL` in `case "$PARAM"`.
+  - Installs prerequisites by distro.
+  - Currently downloads/extracts PAServer and writes `pa$PRODUCT.sh` that runs `paserver -port=64211`.
 
-## Script Architecture
+- `pacommander.dpr`
+  - Currently a console skeleton (`System.SysUtils` + TODO in main try/except).
+  - This is the intended seam for router bootstrap and host lifecycle orchestration.
 
-`scripts/SetupLinux4Delphi.sh` has three main phases:
+- `pacommander.dproj`
+  - Console project with `<Platforms>` currently `Win32=True`, `Linux64=False`.
+  - Linux-side router delivery requires enabling Linux64 and aligning build/release flow.
 
-1. Argument parsing: `PARAM` defaults to the latest supported compiler version. The argument loop handles `--help` and optional package-manager overrides.
-2. Version resolution: `case "$PARAM"` maps accepted aliases to `COMPILER`, `PRODUCT`, `RELEASE`, and `PASERVER_URL`; `ARCHIVE` is derived from the URL basename.
-3. Distro detection and install: the script reads `/etc/os-release`, selects `apt`, `dnf`, `yum`, or `pacman`, installs packages, downloads PAServer, extracts it, and writes `/usr/local/bin/pa$PRODUCT.sh`.
+## Project Structure and Change Surfaces
 
-## Adding Delphi Versions
+- `scripts/SetupLinux4Delphi.sh`: production installer/bootstrap logic.
+- `legacy/*.sh`: historical reference only; do not modify unless task explicitly targets legacy behavior.
+- `pacommander.dpr`, `pacommander.dproj`: router executable entry and build settings.
+- `README.md`: public contract for supported versions, aliases, usage modes, install locations.
+- `.github/workflows/commit_test.yml`: CI guard for shell lint + live install/start validation.
 
-When adding a point release, add the specific version case before the broader compiler-version case. Update the canonical compiler alias to point at the latest point release, adjust the default `PARAM` if it is the newest release overall, and update both help-text blocks. Also update `.github/workflows/commit_test.yml` when CI should test the new version.
+## Coupled Changes Playbooks
 
-The compiler version, such as `37.0` or `23.0`, is the canonical alias and should map to the latest point release for that compiler. Specific product versions, such as `13.0` or `12.2`, should keep exact entries.
+### A) Add or change PAServer version mapping
+Update all of:
+1. `scripts/SetupLinux4Delphi.sh` alias map and `PASERVER_URL` entries.
+2. Script help text (`--help`).
+3. `README.md` version matrix/alias descriptions.
+4. `.github/workflows/commit_test.yml` validation target(s) when coverage changes.
 
-## PAServer URLs
+Keep compiler aliases (`37.0`, `23.0`, etc.) mapping to latest point release, while explicit product aliases (`13.0`, `12.2`) stay exact.
 
-PAServer download URLs are not fully predictable. Use the Embarcadero DocWiki page for the authoritative current URL:
+### B) Implement or extend router mode in pacommander
+Synchronize at minimum:
+1. Router behavior in Delphi units rooted from `pacommander.dpr`.
+2. Script bootstrap behavior in `scripts/SetupLinux4Delphi.sh` (what it installs/starts by default).
+3. README usage/migration explanation (direct mode vs router mode).
+4. CI checks for whichever mode is default and any compatibility path still promised.
 
-`https://docwiki.embarcadero.com/RADStudio/en/Installing_the_Platform_Assistant_on_Linux`
+### C) Change install/state layout
+If layout changes for router mode, update together:
+- Script output text and generated launcher behavior.
+- README installation-location section.
+- Router lookup logic for existing installs/state.
 
-For older releases, compare existing `case` entries before making a change.
+## Testing and Verification Guidance
+
+Current automated checks are shell/install focused:
+- `shellcheck scripts/SetupLinux4Delphi.sh`
+- `bash -n scripts/SetupLinux4Delphi.sh`
+- CI in `.github/workflows/commit_test.yml`:
+  - Ubuntu 26.04 installs 13.1, starts `pa13.1.sh`, verifies `pgrep paserver`
+  - RHEL 10 does the same
+
+For pacommander router work, testing is mandatory before calling behavior stable. Validate at least:
+1. **Version identification**: incoming connection metadata is parsed into the correct target PAServer version.
+2. **Connection handoff**: router launches/reuses the correct backend PAServer and connects client traffic to it.
+3. **Proxy routing**: bidirectional proxying works without protocol corruption, including disconnect/reconnect behavior.
+4. **Missing-version path**: when target version is absent, install flow succeeds and then connection is routed.
+5. **Port management**: backend PAServer free-port allocation avoids collisions while router remains on 64211.
+
+There is no dedicated pacommander test project yet; add automated verification (unit/integration/CI command checks) as router implementation progresses.
+
+## Practical Rules for Future Agents
+
+- Prefer targeted edits in `scripts/SetupLinux4Delphi.sh`; keep package-manager logic readable.
+- Do not modify `legacy/` for new behavior.
+- Do not claim router behavior exists until implemented in pacommander sources.
+- Preserve direct script mode unless a change explicitly removes compatibility and updates docs/CI in the same patch.
+- For PAServer URL changes, verify against:
+  - https://docwiki.embarcadero.com/RADStudio/en/Installing_the_Platform_Assistant_on_Linux
+
+## Important Caveats / Open Items
+
+- Router protocol detection details (how required PAServer version is inferred from inbound connection data) are not yet implemented/documented in source.
+- `README.md` and script alias mapping can drift; always verify both when changing version support.
