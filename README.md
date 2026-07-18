@@ -125,6 +125,10 @@ smart PAServer router. Today it only does one thing: it listens on port
 No install step, no sudo required. See `--help` for host/port/log-file
 options. This is not yet wired into `SetupLinux4Delphi.sh`.
 
+See [PACOMMANDER.md](PACOMMANDER.md) for the project's goals, what's been
+learned about the PAServer wire protocol so far, and the current state of
+the "smart router" idea.
+
 ## More information
 
 The installation of packages is based on the [DocWiki](https://docwiki.embarcadero.com/RADStudio/en/Linux_Application_Development), but with a few changes to address nuances of different distros & installs. If the script doesn't work on your distro of choice then see if the original DocWiki instructions do, and if that still doesn't work, then your distro or installation might not be supported.

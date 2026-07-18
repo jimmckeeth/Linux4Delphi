@@ -400,16 +400,20 @@ if ! tar xvf "$INSTALL_DIR/$ARCHIVE" -C "$INSTALL_DIR" --strip-components=1; the
     exit 1
 fi
 
-# Fix the Python 3.6 dependency in lldb for Delphi 11.2
+# Fix the Python 3 dependency in lldb: every PAServer Linux package we've
+# checked (not just 11.2) ships lldb symlinked to a Debian/Ubuntu-specific
+# libpython3 path that doesn't exist on other distros or other package
+# versions, silently breaking the remote debugger.
 # https://blogs.embarcadero.com/setting-up-ubuntu-22-04-for-delphi-11-2-debugging/
-if [[ "$PRODUCT" == "11.2" ]]; then
+LLDB_LIBPYTHON="$INSTALL_DIR/lldb/lib/libpython3.so"
+if [[ -L "$LLDB_LIBPYTHON" && ! -e "$LLDB_LIBPYTHON" ]]; then
     echo "Fixing lldb Python dependency"
     if [[ "$PKG" == "apt" ]]; then
-        ln -sf "$(find /usr/lib/x86_64-linux-gnu -maxdepth 1 -name "libpython3.*.so.1.0" | sort | tail -1)" "$INSTALL_DIR"/lldb/lib/libpython3.so
+        ln -sf "$(find /usr/lib/x86_64-linux-gnu -maxdepth 1 -name "libpython3.*.so.1.0" | sort | tail -1)" "$LLDB_LIBPYTHON"
     elif [[ "$PKG" == "pacman" ]]; then
-        ln -sf "$(find /usr/lib -maxdepth 1 -name "libpython3.*.so" | sort | tail -1)" "$INSTALL_DIR"/lldb/lib/libpython3.so
+        ln -sf "$(find /usr/lib -maxdepth 1 -name "libpython3.*.so" | sort | tail -1)" "$LLDB_LIBPYTHON"
     else
-        ln -sf "$(find /usr/lib64 -maxdepth 1 -name "libpython3*.so.1.0" | sort | tail -1)" "$INSTALL_DIR"/lldb/lib/libpython3.so
+        ln -sf "$(find /usr/lib64 -maxdepth 1 -name "libpython3*.so.1.0" | sort | tail -1)" "$LLDB_LIBPYTHON"
     fi
 fi
 # Ensure ownership by the invoking user

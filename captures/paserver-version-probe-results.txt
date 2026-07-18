@@ -1,0 +1,54 @@
+############ LinuxPAServer19.0 (port 65210) ############
+handshake reply: 0600000000
+connect result: b'{"error":{"name":"TDBXError","code":0,"message":"Remote error: Authentication manager rejected user credentials. This may due to invalid combination of DS user name and password"}'
+GetDatabase result: 810 bytes
+prepare(VerifyPlatform) result: b'{"result":[{"handle":[1]},{"fields":[0,false]},{"parameters":[6,[26,0,1,0,0,"APlatform",0,0,0],[26,0,2,0,0,"ServerPlatform",0,0,0],[6,0,2,0,0,"ServerMajorVersion",0,0,0],[6,0,2,0,0,"ServerMinorVersion",0,0,0],[26,0,2,0,0,"ScratchDir",0,0,0],[4,0,4,0,0,"ReturnParameter",0,0,0]]}]}'
+execute(VerifyPlatform) result (106 bytes):
+  hex: 7b22726573756c74223a5b7b22726f7773223a5b305d7d2c7b2264617461223a5b36362cc0274c696e75783634616661711000312f746d702f70617365727665722d76657273696f6e732f736372617463682d4c696e7578504153657276657231392e302f605d7d5d7d
+  raw: b'{"result":[{"rows":[0]},{"data":[66,\xc0\'Linux64afaq\x10\x001/tmp/paserver-versions/scratch-LinuxPAServer19.0/`]}]}'
+
+############ LinuxPAServer20.0 (port 65211) ############
+handshake reply: 0600000000
+connect result: b'{"error":{"name":"TDBXError","code":0,"message":"Remote error: Authentication manager rejected user credentials. This may due to invalid combination of DS user name and password"}'
+GetDatabase result: 810 bytes
+prepare(VerifyPlatform) result: b'{"result":[{"handle":[1]},{"fields":[0,false]},{"parameters":[6,[26,0,1,0,0,"APlatform",0,0,0],[26,0,2,0,0,"ServerPlatform",0,0,0],[6,0,2,0,0,"ServerMajorVersion",0,0,0],[6,0,2,0,0,"ServerMinorVersion",0,0,0],[26,0,2,0,0,"ScratchDir",0,0,0],[4,0,4,0,0,"ReturnParameter",0,0,0]]}]}'
+execute(VerifyPlatform) result (106 bytes):
+  hex: 7b22726573756c74223a5b7b22726f7773223a5b305d7d2c7b2264617461223a5b36362cc0274c696e757836346170618a1000312f746d702f70617365727665722d76657273696f6e732f736372617463682d4c696e7578504153657276657232302e302f605d7d5d7d
+  raw: b'{"result":[{"rows":[0]},{"data":[66,\xc0\'Linux64apa\x8a\x10\x001/tmp/paserver-versions/scratch-LinuxPAServer20.0/`]}]}'
+
+############ LinuxPAServer21.0 (port 65212) ############
+handshake reply: 0600000000
+connect result: b'{"error":{"name":"TDBXError","code":0,"message":"Remote error: Authentication manager rejected user credentials. This may due to invalid combination of DS user name and password"}'
+GetDatabase result: 810 bytes
+prepare(VerifyPlatform) result: b'{"result":[{"handle":[1]},{"fields":[0,false]},{"parameters":[6,[26,0,1,0,0,"APlatform",0,0,0],[26,0,2,0,0,"ServerPlatform",0,0,0],[6,0,2,0,0,"ServerMajorVersion",0,0,0],[6,0,2,0,0,"ServerMinorVersion",0,0,0],[26,0,2,0,0,"ScratchDir",0,0,0],[4,0,4,0,0,"ReturnParameter",0,0,0]]}]}'
+execute(VerifyPlatform) result (106 bytes):
+  hex: 7b22726573756c74223a5b7b22726f7773223a5b305d7d2c7b2264617461223a5b36362cc0274c696e75783634617a61671000312f746d702f70617365727665722d76657273696f6e732f736372617463682d4c696e7578504153657276657232312e302f605d7d5d7d
+  raw: b'{"result":[{"rows":[0]},{"data":[66,\xc0\'Linux64azag\x10\x001/tmp/paserver-versions/scratch-LinuxPAServer21.0/`]}]}'
+
+############ LinuxPAServer22.0 (port 65213) ############
+handshake reply: 0600000000
+connect result: b'{"error":{"name":"TDBXError","code":0,"message":"Remote error: Authentication manager rejected user credentials. This may due to invalid combination of DS user name and password"}'
+GetDatabase result: 810 bytes
+prepare(VerifyPlatform) result: b'{"result":[{"handle":[1]},{"fields":[0,false]},{"parameters":[6,[26,0,1,0,0,"APlatform",0,0,0],[26,0,2,0,0,"ServerPlatform",0,0,0],[6,0,2,0,0,"ServerMajorVersion",0,0,0],[6,0,2,0,0,"ServerMinorVersion",0,0,0],[26,0,2,0,0,"ScratchDir",0,0,0],[4,0,4,0,0,"ReturnParameter",0,0,0]]}]}'
+execute(VerifyPlatform) result (106 bytes):
+  hex: 7b22726573756c74223a5b7b22726f7773223a5b305d7d2c7b2264617461223a5b36362cc0274c696e757836346185617f1000312f746d702f70617365727665722d76657273696f6e732f736372617463682d4c696e7578504153657276657232322e302f605d7d5d7d
+  raw: b'{"result":[{"rows":[0]},{"data":[66,\xc0\'Linux64a\x85a\x7f\x10\x001/tmp/paserver-versions/scratch-LinuxPAServer22.0/`]}]}'
+
+############ LinuxPAServer23.0 (port 65214) ############
+handshake reply: 0600000000
+connect result: b'{"error":{"name":"TDBXError","code":0,"message":"Remote error: Authentication manager rejected user credentials. This may due to invalid combination of DS user name and password"}'
+GetDatabase result: 810 bytes
+prepare(VerifyPlatform) result: b'{"result":[{"handle":[1]},{"fields":[0,false]},{"parameters":[6,[26,0,1,0,0,"APlatform",0,0,0],[26,0,2,0,0,"ServerPlatform",0,0,0],[6,0,2,0,0,"ServerMajorVersion",0,0,0],[6,0,2,0,0,"ServerMinorVersion",0,0,0],[26,0,2,0,0,"ScratchDir",0,0,0],[4,0,4,0,0,"ReturnParameter",0,0,0]]}]}'
+execute(VerifyPlatform) result (106 bytes):
+  hex: 7b22726573756c74223a5b7b22726f7773223a5b305d7d2c7b2264617461223a5b36362cc0274c696e75783634618f618e1000312f746d702f70617365727665722d76657273696f6e732f736372617463682d4c696e7578504153657276657232332e302f605d7d5d7d
+  raw: b'{"result":[{"rows":[0]},{"data":[66,\xc0\'Linux64a\x8fa\x8e\x10\x001/tmp/paserver-versions/scratch-LinuxPAServer23.0/`]}]}'
+
+############ LinuxPAServer37.0 (port 65215) ############
+handshake reply: 0600000000
+connect result: b'{"error":{"name":"TDBXError","code":0,"message":"Remote error: Authentication manager rejected user credentials. This may due to invalid combination of DS user name and password"}'
+GetDatabase result: 810 bytes
+prepare(VerifyPlatform) result: b'{"result":[{"handle":[1]},{"fields":[0,false]},{"parameters":[6,[26,0,1,0,0,"APlatform",0,0,0],[26,0,2,0,0,"ServerPlatform",0,0,0],[6,0,2,0,0,"ServerMajorVersion",0,0,0],[6,0,2,0,0,"ServerMinorVersion",0,0,0],[26,0,2,0,0,"ScratchDir",0,0,0],[4,0,4,0,0,"ReturnParameter",0,0,0]]}]}'
+execute(VerifyPlatform) result (107 bytes):
+  hex: 7b22726573756c74223a5b7b22726f7773223a5b305d7d2c7b2264617461223a5b36372cc0274c696e75783634620173616a1000312f746d702f70617365727665722d76657273696f6e732f736372617463682d4c696e7578504153657276657233372e302f605d7d5d7d
+  raw: b'{"result":[{"rows":[0]},{"data":[67,\xc0\'Linux64b\x01saj\x10\x001/tmp/paserver-versions/scratch-LinuxPAServer37.0/`]}]}'
+
