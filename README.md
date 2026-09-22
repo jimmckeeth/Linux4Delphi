@@ -40,7 +40,8 @@ Usage: `sudo SetupLinux4Delphi.sh [version] [pkgmgr]`
 
 Where [version] is one of the following:
 
-* Florence 13.1    = `Florence`, `37.0`, `13.1` or *blank*
+* Florence 13.2    = `Florence`, `37.0`, `13.2` or *blank*
+* Florence 13.1    = `13.1`
 * Florence 13.0    = `13.0`
 * Athens 12.3      = `Athens`, `23.0`, `12.3`, or `12`
 * Athens 12.2      = `12.2`
@@ -111,7 +112,7 @@ The installation locations are as follows:
 * `SCRIPT_PATH="/usr/local/bin/pa$PRODUCT.sh"`
 * `SCRATCH_DIR="$REAL_HOME/.PAServer/$PRODUCT-scratch"`
 
-Where `$PRODUCT` is 13.1, 13.0, 12.2, etc. So you launch the latest *Florence* PAServer with `pa13.1.sh`.
+Where `$PRODUCT` is 13.2, 13.1, 12.2, etc. So you launch the latest *Florence* PAServer with `pa13.2.sh`.
 
 ## More information
 

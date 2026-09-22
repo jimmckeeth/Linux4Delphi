@@ -52,7 +52,8 @@ while [[ $# -gt 0 ]]; do
       echo "  manager            = apt, pacman, dnf, or yum (force specific package manager)"
       echo ""
       echo "Where [version] is one of the following:"
-      echo "  37.0, 13.1         = Florence 13.1 [DEFAULT]"
+      echo "  37.0, 13.2         = Florence 13.2 [DEFAULT]"
+      echo "  13.1               = Florence 13.1"
       echo "  13.0               = Florence 13.0"
       echo "  23.0, 12.3, 12     = Athens 12.3"
       echo "  12.2               = Athens 12.2"
@@ -82,7 +83,13 @@ done
 
 case "$PARAM" in
     # Florence
-    "37.0"|"13.1"|"florence")
+    "37.0"|"13.2"|"florence")
+        COMPILER="37.0"
+        PRODUCT="13.2"
+        RELEASE="Florence"
+        PASERVER_URL="https://altd.embarcadero.com/releases/studio/37.0/132/LinuxPAServer37.0.tar.gz"
+        ;;
+    "13.1")
         COMPILER="37.0"
         PRODUCT="13.1"
         RELEASE="Florence"
