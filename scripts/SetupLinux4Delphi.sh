@@ -312,7 +312,16 @@ try_guess_paserver_url() {
     local url status
     for url in "${candidates[@]}"; do
         printf "  Trying: %s\n" "$url"
-        status=$(curl -sI --max-time 10 "$url" 2>/dev/null | awk 'NR==1{print $2}')
+        # This runs before prerequisites are installed, so only wget or curl
+        # (whichever, if either, is already present) can be relied on here.
+        if command -v wget >/dev/null 2>&1; then
+            status=$(wget -q --spider --server-response --timeout=10 "$url" 2>&1 \
+                | awk '/^ *HTTP\// {code=$2} END {print code}')
+        elif command -v curl >/dev/null 2>&1; then
+            status=$(curl -sI --max-time 10 "$url" 2>/dev/null | awk 'NR==1{print $2}' | tr -d '\r')
+        else
+            status=""
+        fi
         if [ "$status" = "200" ]; then
             PASERVER_URL="$url"
             COMPILER="$compiler"
