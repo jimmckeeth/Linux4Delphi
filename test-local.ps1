@@ -9,18 +9,30 @@
 #   .\test-local.ps1 -Ubuntu      # + Ubuntu 26.04 install test
 #   .\test-local.ps1 -RHEL        # + RHEL 10 install test
 #   .\test-local.ps1 -All         # + both install tests
-#   .\test-local.ps1 -Version 13.0  # Override PAServer version (default: 13.2)
+#   .\test-local.ps1 -Version 13.0  # Override PAServer version (default: newest hardcoded version, auto-detected via WSL)
 
 param(
     [switch]$Ubuntu,
     [switch]$RHEL,
     [switch]$All,
-    [string]$Version = "13.2"   # Match CI default
+    [string]$Version = "13.2"   # Fallback only, used if WSL can't auto-detect the newest version below
 )
 
 $Root = $PSScriptRoot
 $Failures = 0
 $Skipped = 0
+$WslAvailable = $null -ne (Get-Command wsl -ErrorAction SilentlyContinue)
+
+# Mirror commit_test.yml's `plan` job: derive "latest" from the script's own
+# PRODUCT="..." lines instead of a second hardcoded literal here, so this
+# can't silently fall behind after a version bump.
+if (-not $PSBoundParameters.ContainsKey('Version') -and $WslAvailable) {
+    $ScriptPathWsl = (wsl wslpath ($Root -replace "\\", "/")) + "/scripts/SetupLinux4Delphi.sh"
+    $Detected = (wsl bash -c "grep -oP 'PRODUCT=`"\K[0-9]+\.[0-9]+(\.[0-9]+)?' '$ScriptPathWsl' | sort -V | tail -1").Trim()
+    if ($Detected) {
+        $Version = $Detected
+    }
+}
 
 function Write-Header([string]$Text) {
     Write-Host ""
@@ -123,8 +135,6 @@ Invoke-Check "docker installed and daemon ready" {
     $script:DockerOk = Start-DockerIfNeeded
     Set-CheckExitCode $script:DockerOk
 }
-
-$WslAvailable = $null -ne (Get-Command wsl -ErrorAction SilentlyContinue)
 
 # 1. bash -n syntax check (via WSL, no Docker needed)
 Write-Header "Syntax check (bash -n)"

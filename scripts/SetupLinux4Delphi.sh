@@ -21,8 +21,30 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
+# Every explicit PAServer product version below needs a matching case branch
+# further down; this array only tracks which one is newest, so the default
+# alias and the help text's [DEFAULT] marker can't drift out of sync with
+# each other (or get left pointing at an old version) the way separate
+# hardcoded literals did.
+KNOWN_VERSIONS=(
+    10.2.0 10.2.3
+    10.3.0 10.3.1 10.3.2 10.3.3
+    10.4.0 10.4.1 10.4.2
+    11.0 11.1 11.2 11.3
+    12.0 12.1 12.2 12.3
+    13.0 13.1 13.2
+)
+LATEST_VERSION="$(printf '%s\n' "${KNOWN_VERSIONS[@]}" | sort -V | tail -1)"
+
+# Prints " [DEFAULT]" when $1 is the newest entry in KNOWN_VERSIONS, for tagging help text.
+version_tag() {
+    if [[ "$1" == "$LATEST_VERSION" ]]; then
+        echo " [DEFAULT]"
+    fi
+}
+
 # Parse arguments
-PARAM="37.0" # Default version
+PARAM="$LATEST_VERSION" # Default version
 PKG_OVERRIDE=""
 
 # Function to download files using whichever tool is available
@@ -52,26 +74,26 @@ while [[ $# -gt 0 ]]; do
       echo "  manager            = apt, pacman, dnf, or yum (force specific package manager)"
       echo ""
       echo "Where [version] is one of the following:"
-      echo "  37.0, 13.2         = Florence 13.2 [DEFAULT]"
-      echo "  13.1               = Florence 13.1"
-      echo "  13.0               = Florence 13.0"
-      echo "  23.0, 12.3, 12     = Athens 12.3"
-      echo "  12.2               = Athens 12.2"
-      echo "  12.1               = Athens 12.1"
-      echo "  12.0               = Athens 12.0"
-      echo "  22.0, 11.3, 11     = Alexandria 11.3"
-      echo "  11.2               = Alexandria 11.2"
-      echo "  11.1               = Alexandria 11.1"
-      echo "  11.0               = Alexandria 11.0"
-      echo "  21.0, 10.4, 10.4.2 = Sydney 10.4.2"
-      echo "  10.4.1             = Sydney 10.4.1"
-      echo "  10.4.0             = Sydney 10.4.0"
-      echo "  20.0, 10.3, 10.3.3 = Rio 10.3.3"
-      echo "  10.3.2             = Rio 10.3.2"
-      echo "  10.3.1             = Rio 10.3.1"
-      echo "  10.3.0             = Rio 10.3.0"
-      echo "  19.0, 10.2, 10.2.3 = Tokyo 10.2.3"
-      echo "  10.2               = Tokyo 10.2.0"
+      echo "  37.0, 13.2         = Florence 13.2$(version_tag 13.2)"
+      echo "  13.1               = Florence 13.1$(version_tag 13.1)"
+      echo "  13.0               = Florence 13.0$(version_tag 13.0)"
+      echo "  23.0, 12.3, 12     = Athens 12.3$(version_tag 12.3)"
+      echo "  12.2               = Athens 12.2$(version_tag 12.2)"
+      echo "  12.1               = Athens 12.1$(version_tag 12.1)"
+      echo "  12.0               = Athens 12.0$(version_tag 12.0)"
+      echo "  22.0, 11.3, 11     = Alexandria 11.3$(version_tag 11.3)"
+      echo "  11.2               = Alexandria 11.2$(version_tag 11.2)"
+      echo "  11.1               = Alexandria 11.1$(version_tag 11.1)"
+      echo "  11.0               = Alexandria 11.0$(version_tag 11.0)"
+      echo "  21.0, 10.4, 10.4.2 = Sydney 10.4.2$(version_tag 10.4.2)"
+      echo "  10.4.1             = Sydney 10.4.1$(version_tag 10.4.1)"
+      echo "  10.4.0             = Sydney 10.4.0$(version_tag 10.4.0)"
+      echo "  20.0, 10.3, 10.3.3 = Rio 10.3.3$(version_tag 10.3.3)"
+      echo "  10.3.2             = Rio 10.3.2$(version_tag 10.3.2)"
+      echo "  10.3.1             = Rio 10.3.1$(version_tag 10.3.1)"
+      echo "  10.3.0             = Rio 10.3.0$(version_tag 10.3.0)"
+      echo "  19.0, 10.2, 10.2.3 = Tokyo 10.2.3$(version_tag 10.2.3)"
+      echo "  10.2               = Tokyo 10.2.0$(version_tag 10.2.0)"
       exit 0
       ;;
     *)

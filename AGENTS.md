@@ -58,9 +58,10 @@ Avoid split ownership of version mapping logic long-term. Target owner is pacomm
 ### A) Add or change PAServer version mapping
 Update all of:
 1. `scripts/SetupLinux4Delphi.sh` alias map and `PASERVER_URL` entries.
-2. Script help text (`--help`).
-3. `README.md` version matrix/alias descriptions.
-4. No CI edit needed for routine version additions: `.github/workflows/commit_test.yml`'s `probe_urls` job picks up every new `PASERVER_URL` automatically, and `plan` always targets whatever is newest. Only touch the workflow file itself if the *mechanism* needs to change (e.g. how many versions get full install tests, or the guess-probing candidates).
+2. `scripts/SetupLinux4Delphi.sh`'s `KNOWN_VERSIONS` array — add the new product version string here too. This is the single source of truth `LATEST_VERSION` (`sort -V | tail -1` over it) is computed from, which in turn drives the default `PARAM` value and the help text's `[DEFAULT]` marker (via `version_tag`). Forgetting this step leaves the default pointed at an old version even though the case branch exists.
+3. Script help text (`--help`) — add a line with a `$(version_tag X.Y)` call so the `[DEFAULT]` marker can land on it automatically once it's newest.
+4. `README.md` version matrix/alias descriptions.
+5. No CI edit needed for routine version additions: `.github/workflows/commit_test.yml`'s `probe_urls` job picks up every new `PASERVER_URL` automatically, and `plan` always targets whatever is newest (via its own independent `grep`/`sort -V` over `PRODUCT="..."` lines — it does not read `KNOWN_VERSIONS`). Only touch the workflow file itself if the *mechanism* needs to change (e.g. how many versions get full install tests, or the guess-probing candidates).
 
 Keep compiler aliases (`37.0`, `23.0`, etc.) mapping to latest point release, while explicit product aliases (`13.0`, `12.2`) stay exact.
 
