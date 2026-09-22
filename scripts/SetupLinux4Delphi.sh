@@ -243,11 +243,23 @@ try_guess_paserver_url() {
             product="${major}.${minor}.${patch}"
             digits="${major}${minor}${patch}"
             ;;
-        11) compiler="22.0"; release="Alexandria"; product="${major}.${minor}"; digits="${major}${minor}" ;;
-        12) compiler="23.0"; release="Athens";     product="${major}.${minor}"; digits="${major}${minor}" ;;
-        13) compiler="37.0"; release="Florence";   product="${major}.${minor}"; digits="${major}${minor}" ;;
-        14) compiler="38.0"; release="";           product="${major}.${minor}"; digits="${major}${minor}" ;;
-        15) compiler="39.0"; release="";           product="${major}.${minor}"; digits="${major}${minor}" ;;
+        11|12|13|14|15)
+            # These eras are only ever named major.minor (no third-level patch
+            # release like 10.x's Release1/2/3); reject a 3-component input
+            # instead of silently ignoring the patch and guessing major.minor.
+            if [ "$has_patch" -eq 1 ]; then
+                return 1
+            fi
+            case "$major" in
+                11) compiler="22.0"; release="Alexandria" ;;
+                12) compiler="23.0"; release="Athens" ;;
+                13) compiler="37.0"; release="Florence" ;;
+                14) compiler="38.0"; release="" ;;
+                15) compiler="39.0"; release="" ;;
+            esac
+            product="${major}.${minor}"
+            digits="${major}${minor}"
+            ;;
         *) return 1 ;;
     esac
 
