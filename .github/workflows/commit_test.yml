@@ -18,9 +18,31 @@ jobs:
           scandir: './scripts'
           severity: error
 
-  ubuntu_test:
-    name: Ubuntu 26.04
+  discover_versions:
+    name: Discover versions to test
     runs-on: ubuntu-latest
+    outputs:
+      versions: ${{ steps.list.outputs.versions }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: List the 5 newest explicitly supported versions
+        id: list
+        run: |
+          set -e
+          versions=$(grep -oP 'PRODUCT="\K[0-9]+\.[0-9]+(\.[0-9]+)?' scripts/SetupLinux4Delphi.sh \
+            | sort -Vu | tail -5)
+          json=$(printf '%s\n' "$versions" | jq -R . | jq -sc .)
+          echo "versions=$json" >> "$GITHUB_OUTPUT"
+          echo "Testing versions: $json"
+
+  ubuntu_test:
+    name: Ubuntu 26.04 (${{ matrix.version }})
+    needs: discover_versions
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ${{ fromJson(needs.discover_versions.outputs.versions) }}
     steps:
       - uses: actions/checkout@v5
       - name: Run Setup and Verify PAServer in Ubuntu 26.04
@@ -32,25 +54,30 @@ jobs:
             bash -c "
               set -e
               chmod +x /workspace/scripts/SetupLinux4Delphi.sh
-              /workspace/scripts/SetupLinux4Delphi.sh 13.1
-              /usr/local/bin/pa13.1.sh &
+              /workspace/scripts/SetupLinux4Delphi.sh ${{ matrix.version }}
+              /usr/local/bin/pa${{ matrix.version }}.sh &
               sleep 15
               pgrep paserver
             "
 
   rhel_test:
-    name: RHEL 10
+    name: RHEL 10 (${{ matrix.version }})
+    needs: discover_versions
     runs-on: ubuntu-latest
     container:
       image: redhat/ubi10:latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ${{ fromJson(needs.discover_versions.outputs.versions) }}
     steps:
       - uses: actions/checkout@v5
       - name: Run Setup
         run: |
           chmod +x ./scripts/SetupLinux4Delphi.sh
-          ./scripts/SetupLinux4Delphi.sh 13.1
+          ./scripts/SetupLinux4Delphi.sh ${{ matrix.version }}
       - name: Verify PAServer
         run: |
-          /usr/local/bin/pa13.1.sh &
+          /usr/local/bin/pa${{ matrix.version }}.sh &
           sleep 15
           pgrep paserver

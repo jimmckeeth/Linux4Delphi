@@ -60,7 +60,7 @@ Update all of:
 1. `scripts/SetupLinux4Delphi.sh` alias map and `PASERVER_URL` entries.
 2. Script help text (`--help`).
 3. `README.md` version matrix/alias descriptions.
-4. `.github/workflows/commit_test.yml` validation target(s) when coverage changes.
+4. No CI edit needed for routine version additions: `.github/workflows/commit_test.yml`'s `discover_versions` job derives its test matrix from the `PRODUCT="..."` entries in the script (newest 5 by version sort). Only touch the workflow file itself if the *mechanism* needs to change (e.g. how many versions are covered, or the discovery logic).
 
 Keep compiler aliases (`37.0`, `23.0`, etc.) mapping to latest point release, while explicit product aliases (`13.0`, `12.2`) stay exact.
 
@@ -83,8 +83,9 @@ Current automated checks are shell/install focused:
 - `shellcheck scripts/SetupLinux4Delphi.sh`
 - `bash -n scripts/SetupLinux4Delphi.sh`
 - CI in `.github/workflows/commit_test.yml`:
-  - Ubuntu 26.04 installs 13.1, starts `pa13.1.sh`, verifies `pgrep paserver`
-  - RHEL 10 does the same
+  - `discover_versions` extracts the 5 newest `PRODUCT="..."` versions directly from the script (no hardcoded version list to maintain).
+  - Ubuntu 26.04 and RHEL 10 each run as a matrix over those versions: install, start `pa<version>.sh`, verify `pgrep paserver`.
+  - The URL-guessing path (`try_guess_paserver_url`, for versions not explicitly listed) is not covered by this matrix and has no automated test yet.
 
 For pacommander router work, testing is mandatory before calling behavior stable. Validate at least:
 1. **Version identification**: incoming connection metadata is parsed into the correct target PAServer version.
