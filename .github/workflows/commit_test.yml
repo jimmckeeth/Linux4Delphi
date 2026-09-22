@@ -18,9 +18,88 @@ jobs:
           scandir: './scripts'
           severity: error
 
-  ubuntu_test:
-    name: Ubuntu 26.04
+  probe_urls:
+    name: Probe all hardcoded PAServer URLs
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check every explicit PASERVER_URL is still reachable
+        run: |
+          set +e
+          fail=0
+          broken=()
+          while IFS= read -r url; do
+            status=$(curl -sI --max-time 15 "$url" 2>/dev/null | awk 'NR==1{print $2}' | tr -d '\r')
+            if [ "$status" = "200" ]; then
+              echo "OK   ($status): $url"
+            else
+              echo "::error::Broken PASERVER_URL (status='$status'): $url"
+              broken+=("$url (status='$status')")
+              fail=1
+            fi
+          done < <(grep -oP 'PASERVER_URL="\Khttps?://[^"]+' scripts/SetupLinux4Delphi.sh)
+
+          if [ "$fail" -ne 0 ]; then
+            {
+              echo "### Broken PASERVER_URL(s)"
+              printf -- '- `%s`\n' "${broken[@]}"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$fail"
+
+  plan:
+    name: Plan install tests
+    runs-on: ubuntu-latest
+    outputs:
+      versions: ${{ steps.plan.outputs.versions }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Determine latest hardcoded version, probe for a newer guessed one
+        id: plan
+        run: |
+          set +e
+          latest=$(grep -oP 'PRODUCT="\K[0-9]+\.[0-9]+(\.[0-9]+)?' scripts/SetupLinux4Delphi.sh \
+            | sort -Vu | tail -1)
+          echo "Latest hardcoded version: $latest"
+
+          # Pull in just the guessing function; the full script requires root
+          # before it's even defined, and we don't want to install anything here.
+          source <(sed -n '/^try_guess_paserver_url()/,/^}/p' scripts/SetupLinux4Delphi.sh)
+
+          major="${latest%%.*}"
+          rest="${latest#*.}"
+          minor="${rest%%.*}"
+          candidates=("${major}.$((minor + 1))" "$((major + 1)).0")
+
+          guessed=""
+          for c in "${candidates[@]}"; do
+            if try_guess_paserver_url "$c"; then
+              echo "::warning::URL guessing found a newer, not-yet-listed PAServer version ($c -> $PASERVER_URL). Consider adding it to scripts/SetupLinux4Delphi.sh."
+              {
+                echo "### Newer version found by guessing"
+                echo "- **$c** -> \`$PASERVER_URL\`"
+              } >> "$GITHUB_STEP_SUMMARY"
+              guessed="$c"
+              break
+            fi
+          done
+
+          if [ -n "$guessed" ]; then
+            versions=$(printf '%s\n' "$latest" "$guessed" | jq -R . | jq -sc .)
+          else
+            versions=$(printf '%s\n' "$latest" | jq -R . | jq -sc .)
+          fi
+          echo "versions=$versions" >> "$GITHUB_OUTPUT"
+          echo "Testing versions: $versions"
+
+  ubuntu_test:
+    name: Ubuntu 26.04 (${{ matrix.version }})
+    needs: plan
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ${{ fromJson(needs.plan.outputs.versions) }}
     steps:
       - uses: actions/checkout@v5
       - name: Run Setup and Verify PAServer in Ubuntu 26.04
@@ -32,25 +111,30 @@ jobs:
             bash -c "
               set -e
               chmod +x /workspace/scripts/SetupLinux4Delphi.sh
-              /workspace/scripts/SetupLinux4Delphi.sh 13.1
-              /usr/local/bin/pa13.1.sh &
+              /workspace/scripts/SetupLinux4Delphi.sh ${{ matrix.version }}
+              /usr/local/bin/pa${{ matrix.version }}.sh &
               sleep 15
               pgrep paserver
             "
 
   rhel_test:
-    name: RHEL 10
+    name: RHEL 10 (${{ matrix.version }})
+    needs: plan
     runs-on: ubuntu-latest
     container:
       image: redhat/ubi10:latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ${{ fromJson(needs.plan.outputs.versions) }}
     steps:
       - uses: actions/checkout@v5
       - name: Run Setup
         run: |
           chmod +x ./scripts/SetupLinux4Delphi.sh
-          ./scripts/SetupLinux4Delphi.sh 13.1
+          ./scripts/SetupLinux4Delphi.sh ${{ matrix.version }}
       - name: Verify PAServer
         run: |
-          /usr/local/bin/pa13.1.sh &
+          /usr/local/bin/pa${{ matrix.version }}.sh &
           sleep 15
           pgrep paserver

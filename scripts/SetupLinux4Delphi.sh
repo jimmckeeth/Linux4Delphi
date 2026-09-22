@@ -21,8 +21,30 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
+# Every explicit PAServer product version below needs a matching case branch
+# further down; this array only tracks which one is newest, so the default
+# alias and the help text's [DEFAULT] marker can't drift out of sync with
+# each other (or get left pointing at an old version) the way separate
+# hardcoded literals did.
+KNOWN_VERSIONS=(
+    10.2.0 10.2.3
+    10.3.0 10.3.1 10.3.2 10.3.3
+    10.4.0 10.4.1 10.4.2
+    11.0 11.1 11.2 11.3
+    12.0 12.1 12.2 12.3
+    13.0 13.1 13.2
+)
+LATEST_VERSION="$(printf '%s\n' "${KNOWN_VERSIONS[@]}" | sort -V | tail -1)"
+
+# Prints " [DEFAULT]" when $1 is the newest entry in KNOWN_VERSIONS, for tagging help text.
+version_tag() {
+    if [[ "$1" == "$LATEST_VERSION" ]]; then
+        echo " [DEFAULT]"
+    fi
+}
+
 # Parse arguments
-PARAM="37.0" # Default version
+PARAM="$LATEST_VERSION" # Default version
 PKG_OVERRIDE=""
 
 # Function to download files using whichever tool is available
@@ -52,25 +74,26 @@ while [[ $# -gt 0 ]]; do
       echo "  manager            = apt, pacman, dnf, or yum (force specific package manager)"
       echo ""
       echo "Where [version] is one of the following:"
-      echo "  37.0, 13.1         = Florence 13.1 [DEFAULT]"
-      echo "  13.0               = Florence 13.0"
-      echo "  23.0, 12.3, 12     = Athens 12.3"
-      echo "  12.2               = Athens 12.2"
-      echo "  12.1               = Athens 12.1"
-      echo "  12.0               = Athens 12.0"
-      echo "  22.0, 11.3, 11     = Alexandria 11.3"
-      echo "  11.2               = Alexandria 11.2"
-      echo "  11.1               = Alexandria 11.1"
-      echo "  11.0               = Alexandria 11.0"
-      echo "  21.0, 10.4, 10.4.2 = Sydney 10.4.2"
-      echo "  10.4.1             = Sydney 10.4.1"
-      echo "  10.4.0             = Sydney 10.4.0"
-      echo "  20.0, 10.3, 10.3.3 = Rio 10.3.3"
-      echo "  10.3.2             = Rio 10.3.2"
-      echo "  10.3.1             = Rio 10.3.1"
-      echo "  10.3.0             = Rio 10.3.0"
-      echo "  19.0, 10.2, 10.2.3 = Tokyo 10.2.3"
-      echo "  10.2               = Tokyo 10.2.0"
+      echo "  37.0, 13.2         = Florence 13.2$(version_tag 13.2)"
+      echo "  13.1               = Florence 13.1$(version_tag 13.1)"
+      echo "  13.0               = Florence 13.0$(version_tag 13.0)"
+      echo "  23.0, 12.3, 12     = Athens 12.3$(version_tag 12.3)"
+      echo "  12.2               = Athens 12.2$(version_tag 12.2)"
+      echo "  12.1               = Athens 12.1$(version_tag 12.1)"
+      echo "  12.0               = Athens 12.0$(version_tag 12.0)"
+      echo "  22.0, 11.3, 11     = Alexandria 11.3$(version_tag 11.3)"
+      echo "  11.2               = Alexandria 11.2$(version_tag 11.2)"
+      echo "  11.1               = Alexandria 11.1$(version_tag 11.1)"
+      echo "  11.0               = Alexandria 11.0$(version_tag 11.0)"
+      echo "  21.0, 10.4, 10.4.2 = Sydney 10.4.2$(version_tag 10.4.2)"
+      echo "  10.4.1             = Sydney 10.4.1$(version_tag 10.4.1)"
+      echo "  10.4.0             = Sydney 10.4.0$(version_tag 10.4.0)"
+      echo "  20.0, 10.3, 10.3.3 = Rio 10.3.3$(version_tag 10.3.3)"
+      echo "  10.3.2             = Rio 10.3.2$(version_tag 10.3.2)"
+      echo "  10.3.1             = Rio 10.3.1$(version_tag 10.3.1)"
+      echo "  10.3.0             = Rio 10.3.0$(version_tag 10.3.0)"
+      echo "  19.0, 10.2, 10.2.3 = Tokyo 10.2.3$(version_tag 10.2.3)"
+      echo "  10.2               = Tokyo 10.2.0$(version_tag 10.2.0)"
       exit 0
       ;;
     *)
@@ -82,7 +105,13 @@ done
 
 case "$PARAM" in
     # Florence
-    "37.0"|"13.1"|"florence")
+    "37.0"|"13.2"|"florence")
+        COMPILER="37.0"
+        PRODUCT="13.2"
+        RELEASE="Florence"
+        PASERVER_URL="https://altd.embarcadero.com/releases/studio/37.0/132/LinuxPAServer37.0.tar.gz"
+        ;;
+    "13.1")
         COMPILER="37.0"
         PRODUCT="13.1"
         RELEASE="Florence"
@@ -203,9 +232,143 @@ case "$PARAM" in
     ;;
 esac
 
+# Attempt to locate a PAServer URL for versions not explicitly listed.
+# Probes candidate URLs derived from observed Embarcadero URL patterns.
+try_guess_paserver_url() {
+    local input="$1"
+    local base="https://altd.embarcadero.com/releases/studio"
+    local major minor patch has_patch compiler release product digits
+
+    if [[ "$input" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+        major="${BASH_REMATCH[1]}"; minor="${BASH_REMATCH[2]}"; patch="${BASH_REMATCH[3]}"; has_patch=1
+    elif [[ "$input" =~ ^([0-9]+)\.([0-9]+)$ ]]; then
+        major="${BASH_REMATCH[1]}"; minor="${BASH_REMATCH[2]}"; patch="0"; has_patch=0
+    else
+        return 1
+    fi
+
+    # Map product major version to internal compiler version and release name.
+    # Compiler numbers tracked the product major 1:1 through 23.0 (Athens/12.x),
+    # then jumped to 37.0 for Florence/13.x. 14.x/15.x aren't released yet, so
+    # 38.0/39.0 below are an unverified extrapolation (assuming the pre-jump
+    # +1-per-major pattern resumed) rather than a confirmed mapping — probing
+    # still decides whether a guess is actually used, and the caller prints an
+    # extra warning whenever `release` is empty.
+    case "$major" in
+        10)
+            case "$minor" in
+                2) compiler="19.0"; release="Tokyo" ;;
+                3) compiler="20.0"; release="Rio" ;;
+                4) compiler="21.0"; release="Sydney" ;;
+                *) return 1 ;;
+            esac
+            product="${major}.${minor}.${patch}"
+            digits="${major}${minor}${patch}"
+            ;;
+        11|12|13|14|15)
+            # These eras are only ever named major.minor (no third-level patch
+            # release like 10.x's Release1/2/3); reject a 3-component input
+            # instead of silently ignoring the patch and guessing major.minor.
+            if [ "$has_patch" -eq 1 ]; then
+                return 1
+            fi
+            case "$major" in
+                11) compiler="22.0"; release="Alexandria" ;;
+                12) compiler="23.0"; release="Athens" ;;
+                13) compiler="37.0"; release="Florence" ;;
+                14) compiler="38.0"; release="" ;;
+                15) compiler="39.0"; release="" ;;
+            esac
+            product="${major}.${minor}"
+            digits="${major}${minor}"
+            ;;
+        *) return 1 ;;
+    esac
+
+    # Build ordered candidate list based on the URL pattern for each era.
+    local candidates=()
+    case "$compiler" in
+        "19.0"|"20.0")
+            # Tokyo/Rio: updates use PAServer/Release{N}/
+            if [ "$patch" -eq 0 ]; then
+                candidates+=("$base/$compiler/PAServer/LinuxPAServer${compiler}.tar.gz")
+            else
+                candidates+=(
+                    "$base/$compiler/PAServer/Release${patch}/LinuxPAServer${compiler}.tar.gz"
+                    "$base/$compiler/PAServer/LinuxPAServer${compiler}.tar.gz"
+                )
+            fi
+            ;;
+        "21.0")
+            # Sydney: updates use {N}/PAServer/
+            if [ "$patch" -eq 0 ]; then
+                candidates+=("$base/$compiler/PAServer/LinuxPAServer${compiler}.tar.gz")
+            else
+                candidates+=(
+                    "$base/$compiler/${patch}/PAServer/LinuxPAServer${compiler}.tar.gz"
+                    "$base/$compiler/PAServer/LinuxPAServer${compiler}.tar.gz"
+                )
+            fi
+            ;;
+        "22.0")
+            # Alexandria: base release has no subdir; updates use {digits}[1]/
+            if [ "$minor" -eq 0 ]; then
+                candidates+=("$base/$compiler/LinuxPAServer${compiler}.tar.gz")
+            else
+                candidates+=(
+                    "$base/$compiler/${digits}1/LinuxPAServer${compiler}.tar.gz"
+                    "$base/$compiler/${digits}/LinuxPAServer${compiler}.tar.gz"
+                )
+            fi
+            ;;
+        *)
+            # Athens/Florence and future: flat {digits}/ or nested {digits}/{digits}1/
+            candidates+=(
+                "$base/$compiler/${digits}/LinuxPAServer${compiler}.tar.gz"
+                "$base/$compiler/${digits}/${digits}1/LinuxPAServer${compiler}.tar.gz"
+            )
+            ;;
+    esac
+
+    echo "Version '$input' is not explicitly listed. Probing for PAServer..."
+    local url status
+    for url in "${candidates[@]}"; do
+        printf "  Trying: %s\n" "$url"
+        # This runs before prerequisites are installed, so only wget or curl
+        # (whichever, if either, is already present) can be relied on here.
+        if command -v wget >/dev/null 2>&1; then
+            status=$(wget --spider --server-response --timeout=10 "$url" 2>&1 \
+                | awk '/^ *HTTP\// {code=$2} END {print code}')
+        elif command -v curl >/dev/null 2>&1; then
+            status=$(curl -sI --max-time 10 "$url" 2>/dev/null | awk 'NR==1{print $2}' | tr -d '\r')
+        else
+            status=""
+        fi
+        if [ "$status" = "200" ]; then
+            PASERVER_URL="$url"
+            COMPILER="$compiler"
+            RELEASE="${release:-Unreleased}"
+            PRODUCT="$product"
+            echo "  Found!"
+            echo "WARNING: Using a guessed URL — verify this PAServer matches your IDE version."
+            if [ -z "$release" ]; then
+                echo "WARNING: Compiler $compiler for $product is an unverified extrapolation," \
+                     "not a confirmed mapping — double-check against the DocWiki before relying on it."
+            fi
+            return 0
+        fi
+    done
+
+    echo "Could not locate a PAServer for '$input'. Check https://altd.embarcadero.com/releases/studio/ manually."
+    return 1
+}
+
 if [ -z "$PASERVER_URL" ]; then
-    echo "Unknown version: $PARAM"
-    exit 1
+    if ! try_guess_paserver_url "$PARAM"; then
+        echo "Unknown version: $PARAM"
+        echo "Run with 'help' to see supported versions."
+        exit 1
+    fi
 fi
 
 ARCHIVE="${PASERVER_URL##*/}"
