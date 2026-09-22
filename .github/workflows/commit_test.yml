@@ -27,15 +27,24 @@ jobs:
         run: |
           set +e
           fail=0
+          broken=()
           while IFS= read -r url; do
             status=$(curl -sI --max-time 15 "$url" 2>/dev/null | awk 'NR==1{print $2}' | tr -d '\r')
             if [ "$status" = "200" ]; then
               echo "OK   ($status): $url"
             else
-              echo "::error::Broken PASERVER_URL ($status): $url"
+              echo "::error::Broken PASERVER_URL (status='$status'): $url"
+              broken+=("$url (status='$status')")
               fail=1
             fi
-          done < <(grep -oP 'PASERVER_URL="\K[^"]+' scripts/SetupLinux4Delphi.sh)
+          done < <(grep -oP 'PASERVER_URL="\Khttps?://[^"]+' scripts/SetupLinux4Delphi.sh)
+
+          if [ "$fail" -ne 0 ]; then
+            {
+              echo "### Broken PASERVER_URL(s)"
+              printf -- '- `%s`\n' "${broken[@]}"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
           exit "$fail"
 
   plan:
