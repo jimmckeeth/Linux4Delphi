@@ -9,13 +9,13 @@
 #   .\test-local.ps1 -Ubuntu      # + Ubuntu 26.04 install test
 #   .\test-local.ps1 -RHEL        # + RHEL 10 install test
 #   .\test-local.ps1 -All         # + both install tests
-#   .\test-local.ps1 -Version 13.0  # Override PAServer version (default: 13.1)
+#   .\test-local.ps1 -Version 13.0  # Override PAServer version (default: 13.2)
 
 param(
     [switch]$Ubuntu,
     [switch]$RHEL,
     [switch]$All,
-    [string]$Version = "13.1"   # Match CI default
+    [string]$Version = "13.2"   # Match CI default
 )
 
 $Root = $PSScriptRoot
