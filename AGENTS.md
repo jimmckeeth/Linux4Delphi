@@ -60,7 +60,7 @@ Update all of:
 1. `scripts/SetupLinux4Delphi.sh` alias map and `PASERVER_URL` entries.
 2. Script help text (`--help`).
 3. `README.md` version matrix/alias descriptions.
-4. No CI edit needed for routine version additions: `.github/workflows/commit_test.yml`'s `discover_versions` job derives its test matrix from the `PRODUCT="..."` entries in the script (newest 5 by version sort). Only touch the workflow file itself if the *mechanism* needs to change (e.g. how many versions are covered, or the discovery logic).
+4. No CI edit needed for routine version additions: `.github/workflows/commit_test.yml`'s `probe_urls` job picks up every new `PASERVER_URL` automatically, and `plan` always targets whatever is newest. Only touch the workflow file itself if the *mechanism* needs to change (e.g. how many versions get full install tests, or the guess-probing candidates).
 
 Keep compiler aliases (`37.0`, `23.0`, etc.) mapping to latest point release, while explicit product aliases (`13.0`, `12.2`) stay exact.
 
@@ -83,9 +83,10 @@ Current automated checks are shell/install focused:
 - `shellcheck scripts/SetupLinux4Delphi.sh`
 - `bash -n scripts/SetupLinux4Delphi.sh`
 - CI in `.github/workflows/commit_test.yml`:
-  - `discover_versions` extracts the 5 newest `PRODUCT="..."` versions directly from the script (no hardcoded version list to maintain).
-  - Ubuntu 26.04 and RHEL 10 each run as a matrix over those versions: install, start `pa<version>.sh`, verify `pgrep paserver`.
-  - The URL-guessing path (`try_guess_paserver_url`, for versions not explicitly listed) is not covered by this matrix and has no automated test yet.
+  - `probe_urls` does a lightweight `HEAD` check against every hardcoded `PASERVER_URL` and fails if any have gone dead — cheap enough to run for the whole table, independently of the install jobs below.
+  - `plan` finds the newest `PRODUCT="..."` version and also probes `try_guess_paserver_url` for the next minor/major version; if guessing finds a real, not-yet-listed URL, it's added to the test list and flagged via a workflow warning + summary (a prompt to add it explicitly, not an assertion that it's already covered).
+  - Ubuntu 26.04 and RHEL 10 each run as a matrix over `plan`'s version list (normally just the latest version; two when guessing finds something newer): install, start `pa<version>.sh`, verify `pgrep paserver`.
+  - Older explicit versions are covered only by the `probe_urls` reachability check, not a full install — full install/start testing is deliberately limited to the newest version(s) to keep CI light.
 
 For pacommander router work, testing is mandatory before calling behavior stable. Validate at least:
 1. **Version identification**: incoming connection metadata is parsed into the correct target PAServer version.
