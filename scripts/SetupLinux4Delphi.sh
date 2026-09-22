@@ -226,8 +226,12 @@ try_guess_paserver_url() {
     fi
 
     # Map product major version to internal compiler version and release name.
-    # Compiler numbers jumped from 23.0 (Athens/12.x) to 37.0 (Florence/13.x);
-    # future releases cannot be reliably predicted beyond 13.x.
+    # Compiler numbers tracked the product major 1:1 through 23.0 (Athens/12.x),
+    # then jumped to 37.0 for Florence/13.x. 14.x/15.x aren't released yet, so
+    # 38.0/39.0 below are an unverified extrapolation (assuming the pre-jump
+    # +1-per-major pattern resumed) rather than a confirmed mapping — probing
+    # still decides whether a guess is actually used, and the caller prints an
+    # extra warning whenever `release` is empty.
     case "$major" in
         10)
             case "$minor" in
@@ -242,6 +246,8 @@ try_guess_paserver_url() {
         11) compiler="22.0"; release="Alexandria"; product="${major}.${minor}"; digits="${major}${minor}" ;;
         12) compiler="23.0"; release="Athens";     product="${major}.${minor}"; digits="${major}${minor}" ;;
         13) compiler="37.0"; release="Florence";   product="${major}.${minor}"; digits="${major}${minor}" ;;
+        14) compiler="38.0"; release="";           product="${major}.${minor}"; digits="${major}${minor}" ;;
+        15) compiler="39.0"; release="";           product="${major}.${minor}"; digits="${major}${minor}" ;;
         *) return 1 ;;
     esac
 
@@ -298,10 +304,14 @@ try_guess_paserver_url() {
         if [ "$status" = "200" ]; then
             PASERVER_URL="$url"
             COMPILER="$compiler"
-            RELEASE="$release"
+            RELEASE="${release:-Unreleased}"
             PRODUCT="$product"
             echo "  Found!"
             echo "WARNING: Using a guessed URL — verify this PAServer matches your IDE version."
+            if [ -z "$release" ]; then
+                echo "WARNING: Compiler $compiler for $product is an unverified extrapolation," \
+                     "not a confirmed mapping — double-check against the DocWiki before relying on it."
+            fi
             return 0
         fi
     done
